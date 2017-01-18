@@ -30,4 +30,33 @@ class Chapter02Spec extends FunSpec with Matchers {
       Chapter02.isSorted(Array(1), (x: Int, y: Int) => x < y) shouldEqual true
     }
   }
+
+  describe("curry") {
+    it("returns a curried function") {
+      val plus = (x: Int, y: Int) => x + y
+
+      val curriedPlus = Chapter02.curry(plus)
+
+      curriedPlus(1)(2) shouldEqual 3
+      curriedPlus(1)(3) shouldEqual 4
+    }
+  }
+
+  describe("uncurry") {
+    it("unwraps curried function into a normal function") {
+      val plus = (x: Int, y: Int) => x + y
+
+      Chapter02.uncurry(Chapter02.curry(plus))(1, 2) shouldEqual plus(1, 2)
+    }
+  }
+
+  describe("compose") {
+    it("composes 2 functions") {
+      val f = (x: Int) => - x
+      val g = (x: Int) => x * x
+
+      Chapter02.compose(f, g)(2) shouldEqual f(g(2))
+      Chapter02.compose(g, f)(2) shouldEqual g(f(2))
+    }
+  }
 }
