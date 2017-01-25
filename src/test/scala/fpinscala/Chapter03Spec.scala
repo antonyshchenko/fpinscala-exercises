@@ -315,6 +315,47 @@ class Chapter03Spec extends FunSpec with Matchers {
         List.zipWith(l2, l1)(f) shouldEqual List(5, 7)
       }
     }
+
+    describe("hasSubsequence") {
+      it("returns true when first argument contains second argument") {
+        val sequence = List(1, 2, 3, 4)
+        val subsequence = List(2, 3)
+
+        List.hasSubsequence(sequence, subsequence) shouldEqual true
+      }
+
+      it("returs true when called on empty lists") {
+        List.hasSubsequence(List[Int](), List[Int]()) shouldEqual true
+      }
+
+      it("returns false when first argument does not contain second argument") {
+        val sequence = List(1, 2, 3, 4)
+        val subsequence = List(7, 8)
+
+        List.hasSubsequence(sequence, subsequence) shouldEqual false
+      }
+
+      it("returns false when subsequence is longer than sequence") {
+        val sequence = List(1, 2)
+        val subsequence = List(1, 2, 3)
+
+        List.hasSubsequence(sequence, subsequence) shouldEqual false
+      }
+
+      it("returns false when sequence is empty") {
+        val sequence = List[Int]()
+        val subsequence = List(1, 2, 3)
+
+        List.hasSubsequence(sequence, subsequence) shouldEqual false
+      }
+
+      it("returns true when sequence is not empty, but subsequence is empty") {
+        val sequence = List(1, 2, 3)
+        val subsequence = List[Int]()
+
+        List.hasSubsequence(sequence, subsequence) shouldEqual true
+      }
+    }
   }
 }
 

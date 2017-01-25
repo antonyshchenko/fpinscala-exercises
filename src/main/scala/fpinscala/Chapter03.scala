@@ -185,4 +185,21 @@ object List {
 
     reverse(go(l1, l2, List[A]()))
   }
+
+  // Exercise 3.24
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    def startsWith(list: List[A], prefix: List[A]): Boolean = (list, prefix) match {
+      case (Nil, Nil) => true
+      case (Cons(_, _), Nil) => true
+      case (Nil, Cons(p, ps)) => false
+      case (Cons(x, xs), Cons(p, ps)) if (x == p) => startsWith(xs, ps)
+      case (Cons(x, xs), Cons(p, ps)) => false
+    }
+
+    sup match {
+      case Nil => sub == Nil
+      case Cons(x, xs) if (startsWith(sup, sub)) => true
+      case Cons(x, xs) => hasSubsequence(xs, sub)
+    }
+  }
 }
