@@ -357,5 +357,89 @@ class Chapter03Spec extends FunSpec with Matchers {
       }
     }
   }
+
+  describe("Tree") {
+    val tree = Branch(
+      left = Branch(
+        left = Leaf(1),
+        right = Leaf(2)
+      ),
+      right = Leaf(-3)
+    )
+
+    val invertedTree = Branch(
+      left = Branch(
+        left = Leaf(-1),
+        right = Leaf(-2)
+      ),
+      right = Leaf(3)
+    )
+
+    describe("size") {
+      it("returns number of nodes (leaves and branches) in the tree") {
+        Tree.size(tree) shouldEqual 5
+      }
+    }
+
+    describe("maximum") {
+      it("returns maximum element in the tree") {
+        Tree.maximum(tree) shouldEqual 2
+      }
+
+      it("returns the value of a single node tree") {
+        Tree.maximum(Leaf(123)) shouldEqual 123
+      }
+    }
+
+    describe("depth") {
+      it("returns maximum path length from a root of the tree to any of the leafs") {
+        Tree.depth(tree) shouldEqual 2
+      }
+
+      it("returns 0 for single node tree") {
+        Tree.depth(Leaf(123)) shouldEqual 0
+      }
+    }
+
+    describe("map") {
+      it("returns a copy of a given tree where each leaf value is transformed with given function") {
+        Tree.map(tree)(x => -x) shouldEqual(invertedTree)
+      }
+    }
+
+    describe("fold") {
+      it("can be used to implement size function") {
+        def sizeUsingFold[A](tree: Tree[A]): Int = {
+          Tree.fold(tree)(_ => 1)((l, r) => 1 + l + r)
+        }
+
+        sizeUsingFold(tree) shouldEqual 5
+      }
+
+      it("can be used to implement maximum function") {
+        def maximumUsingFold(tree: Tree[Int]): Int = {
+          Tree.fold(tree)(x => x)((l, r) => l.max(r))
+        }
+
+        maximumUsingFold(tree) shouldEqual 2
+      }
+
+      it("can be used to implement depth function") {
+        def depthUsingFold[A](tree: Tree[A]): Int = {
+          Tree.fold(tree)(_ => 0)((l, r) => 1 + l + r)
+        }
+
+        depthUsingFold(tree) shouldEqual 2
+      }
+
+      it("can be used to implement map function") {
+        def mapUsingFold[A,B](tree: Tree[A])(f: A => B): Tree[B] = {
+          Tree.fold(tree) { x => Leaf(f(x)): Tree[B] } { (l, r) => Branch(l, r) }
+        }
+
+        mapUsingFold(tree)(x => -x) shouldEqual invertedTree
+      }
+    }
+  }
 }
 
