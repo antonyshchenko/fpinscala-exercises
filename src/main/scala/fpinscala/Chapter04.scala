@@ -72,12 +72,6 @@ object Option {
   // Exercise 4.5
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
     case Nil => Some(Nil)
-    case x :: xs => f(x) match {
-      case None => None
-      case Some(v) => traverse(xs)(f) match {
-        case None => None
-        case Some(list) => Some(v :: list)
-      }
-    }
+    case x :: xs => map2(f(x), traverse(xs)(f)) { (h, tail) => h :: tail }
   }
 }
