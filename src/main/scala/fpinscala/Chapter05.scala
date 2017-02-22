@@ -63,7 +63,29 @@ trait Stream[+A] {
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
+  def map[B](f: A => B): Stream[B] =
+    foldRight(Empty: Stream[B]) { (a, acc) =>
+      cons(f(a), acc)
+    }
 
+  def filter(p: A => Boolean): Stream[A] =
+    foldRight(Empty: Stream[A]) { (a, acc) =>
+      if (p(a)) cons(a, acc) else acc
+    }
+
+  def append[B >: A](stream: Stream[B]): Stream[B] =
+    foldRight(stream) { (a, acc) =>
+      cons(a, acc)
+    }
+
+  def flatmap[B](f: A => Stream[B]): Stream[B] =
+    foldRight(Empty: Stream[B]) { (a, acc) =>
+      f(a).foldRight(acc) { (b, bAcc) =>
+        cons(b, bAcc)
+      }
+    }
+
+  // Exercise 5.14
   def startsWith[B](s: Stream[B]): Boolean = ???
 }
 case object Empty extends Stream[Nothing]
@@ -83,7 +105,37 @@ object Stream {
     else cons(as.head, apply(as.tail: _*))
 
   val ones: Stream[Int] = Stream.cons(1, ones)
-  def from(n: Int): Stream[Int] = ???
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
+  // Exercise 5.8
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+  // Exercise 5.9
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+
+  // Exercise 5.10
+  def fibs(): Stream[Int] = {
+    def f(f1: Int, f2: Int): Stream[Int] =
+      cons(f1, f(f2, f1 + f2))
+
+    f(0, 1)
+  }
+
+  // Exercise 5.11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z) match {
+      case Some((a, s)) => cons(a, unfold(s)(f))
+      case None => Empty
+    }
+
+  // Exercise 5.12
+  def onesU(): Stream[Int] = unfold(1)(x => Option((x, x)))
+
+  def constantU[A](a: A): Stream[A] = unfold(a)(x => Option((x, x)))
+
+  def fromU(n: Int): Stream[Int] = unfold(n - 1)(x => Some((x + 1, x + 1)))
+
+  def fibsU(): Stream[Int] =
+    unfold((0, 1)){ prev =>
+      Some((prev._1, (prev._2, prev._1 + prev._2)))
+    }
 }
