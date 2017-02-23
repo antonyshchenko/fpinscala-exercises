@@ -219,5 +219,136 @@ class Chapter05Spec extends FunSpec with Matchers {
         Stream.fibsU().take(6).toList shouldEqual List(0, 1, 1, 2, 3, 5)
       }
     }
+
+    describe("map in terms of unfold") {
+      val f = (x: Int) => x * 2
+
+      it("transforms values in Stream with given function") {
+        Stream(1, 2, 3).mapU(f).toList shouldEqual List(2, 4, 6)
+      }
+
+      it("returns empty stream when called on empty stream") {
+        Empty.mapU(f).toList shouldEqual List()
+      }
+    }
+
+    describe("take in terms of unfold") {
+      it("returns first n elements of the stream") {
+        Stream(1, 2, 3, 4, 5).takeU(2).toList shouldEqual List(1, 2)
+      }
+
+      it("returns empty stream when n == 0") {
+        Stream(1, 2, 3).takeU(0).toList shouldEqual List()
+      }
+
+      it("returns empty stream when n < 0") {
+        Stream(1, 2, 3).takeU(-1).toList shouldEqual List()
+      }
+
+      it("returns whole stream when n > than length of the stream") {
+        Stream(1, 2, 3).takeU(5).toList shouldEqual List(1, 2, 3)
+      }
+    }
+
+    describe("takeWhile in terms of unfold") {
+      val p = (x: Int) => x % 2 == 0
+
+      it("returns all starting elements of a stream that match a given predicate") {
+        Stream(2, 4, 5, 6).takeWhileU(p).toList shouldEqual List(2, 4)
+      }
+
+      it("returns the whole stream when all elements match given predicate") {
+        Stream(2, 4, 6).takeWhileU(p).toList shouldEqual List(2, 4, 6)
+      }
+
+      it("returns empty stream when first element does not match given predicate") {
+        Stream(1, 2, 4).takeWhileU(p).toList shouldEqual List()
+      }
+
+      it("returns empty stream when called on empty stream") {
+        Stream.empty.takeWhileU(p).toList shouldEqual List()
+      }
+    }
+  }
+
+  describe("zipWith") {
+    val f = (x: Int, y: Int) => x + y
+
+    it("returns a stream where element on position i is a result of applying a function f to elements at the same position in given stream and other stream") {
+      val l1 = Stream(1, 2, 3)
+      val l2 = Stream(4, 5, 6)
+
+      l1.zipWith(l2)(f).toList shouldEqual List(5, 7, 9)
+    }
+
+    it("returns an empty stream when called on empty streams") {
+      Stream().zipWith(Stream())(f).toList shouldEqual List()
+    }
+
+    it("returns stream which is as long as shortest of the two streams") {
+      val l1 = Stream(1, 2)
+      val l2 = Stream(4, 5, 6)
+
+      l1.zipWith(l2)(f).toList shouldEqual List(5, 7)
+      l2.zipWith(l1)(f).toList shouldEqual List(5, 7)
+    }
+  }
+
+  describe("zipAll") {
+    it("returns a stream of pairs of element at same positions from given stream and other stream") {
+      val l1 = Stream(1, 2, 3)
+      val l2 = Stream(4, 5, 6)
+
+      l1.zipAll(l2).toList shouldEqual List((Some(1), Some(4)), (Some(2), Some(5)), (Some(3), Some(6)))
+    }
+
+    it("returns an empty stream when called on empty streams") {
+      Stream().zipAll(Stream()).toList shouldEqual List()
+    }
+
+    it("returns Nones instead of an element when respective stream is exhausted") {
+      val l1 = Stream(1, 2)
+      val l2 = Stream(4, 5, 6)
+
+      l1.zipAll(l2).toList shouldEqual List((Some(1), Some(4)), (Some(2), Some(5)), (None, Some(6)))
+    }
+  }
+
+  describe("startsWith") {
+    it("returns true if stream starts with other stream") {
+      Stream(1, 2, 3, 4).startsWith(Stream(1, 2, 3)) shouldEqual true
+    }
+
+    it("returns false if stream does not start with other stream") {
+      Stream(1, 2, 3, 4).startsWith(Stream(2, 3)) shouldEqual false
+    }
+
+    it("returns true if other stream is empty") {
+      Stream(1, 2, 3).startsWith(Empty) shouldEqual true
+    }
+
+    it("returns true if both streams are empty") {
+      Empty.startsWith(Empty) shouldEqual true
+    }
+
+    it("returns false if tested stream is empty, but other stream is not") {
+      Empty.startsWith(Stream(1, 2)) shouldEqual false
+    }
+  }
+
+  describe("tails") {
+    it("returns streams of suffixes of a given stream") {
+      Stream(1, 2, 3).tails.toList.map(_.toList) shouldEqual List(List(1, 2, 3), List(2, 3), List(3), List())
+    }
+
+    it("empty stream has only one suffix") {
+      Empty.tails.toList.map(_.toList) shouldEqual List(List())
+    }
+  }
+
+  describe("scanRight") {
+    it("returns stream of intemediate results") {
+      Stream(1, 2, 3).scanRight(0)(_ + _).toList shouldEqual List(6, 5, 3, 0)
+    }
   }
 }

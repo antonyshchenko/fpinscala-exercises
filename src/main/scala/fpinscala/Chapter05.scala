@@ -61,23 +61,25 @@ trait Stream[+A] {
       Some(h)
     }
 
-  // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
-  // writing your own function signatures.
+  // Exercise 5.7
   def map[B](f: A => B): Stream[B] =
     foldRight(Empty: Stream[B]) { (a, acc) =>
       cons(f(a), acc)
     }
 
+  // Exercise 5.7
   def filter(p: A => Boolean): Stream[A] =
     foldRight(Empty: Stream[A]) { (a, acc) =>
       if (p(a)) cons(a, acc) else acc
     }
 
+  // Exercise 5.7
   def append[B >: A](stream: Stream[B]): Stream[B] =
     foldRight(stream) { (a, acc) =>
       cons(a, acc)
     }
 
+  // Exercise 5.7
   def flatmap[B](f: A => Stream[B]): Stream[B] =
     foldRight(Empty: Stream[B]) { (a, acc) =>
       f(a).foldRight(acc) { (b, bAcc) =>
@@ -85,8 +87,100 @@ trait Stream[+A] {
       }
     }
 
+  // Exercise 5.13
+  def mapU[B](f: A => B): Stream[B] =
+    unfold(this) { stream =>
+      stream match {
+        case Cons(h, t) => Some((f(h()), t()))
+        case _ => None
+      }
+    }
+
+  // Exercise 5.13
+  def takeU(n: Int): Stream[A] =
+    unfold((this, 0)) { state =>
+      val stream = state._1
+      val takenSoFar = state._2
+
+      stream match {
+        case Cons(h, t) if (takenSoFar < n) => Some((h(), (t(), takenSoFar + 1)))
+        case _ => None
+      }
+    }
+
+  // Exercise 5.13
+  def takeWhileU(p: A => Boolean): Stream[A] =
+    unfold(this) { stream =>
+      stream match {
+        case Cons(h, t) if (p(h())) => Some((h(), t()))
+        case _ => None
+      }
+    }
+
+  // Exercise 5.13
+  def zipWith[B >: A](other: Stream[B])(f: (B, B) => B): Stream[B] = {
+    unfold((this: Stream[B], other)) { state =>
+      val stream1: Stream[B] = state._1
+      val stream2: Stream[B] = state._2
+
+      (stream1, stream2) match {
+        case (Cons(h1, t1), Cons(h2, t2)) => Some((f(h1(), h2()), (t1(), t2())))
+        case (Empty, _) => None
+        case (_, Empty) => None
+        case (_, _) => None
+      }
+    }
+  }
+
+  // Exercise 5.13
+  def zipAll[B](other: Stream[B]): Stream[(Option[A], Option[B])] = {
+    unfold((this, other)) { state =>
+      val stream1: Stream[A] = state._1
+      val stream2: Stream[B] = state._2
+
+      (stream1, stream2) match {
+        case (Cons(h1, t1), Cons(h2, t2)) => Some((
+          (Some(h1()), Some(h2())),
+          (t1(), t2())
+        ))
+        case (Empty, Cons(h2, t2)) => Some((
+          (None, Some(h2())),
+          (Empty, t2())
+        ))
+        case (Cons(h1, t1), Empty) => Some((
+          (Some(h1()), None),
+          (t1(), Empty)
+        ))
+        case (_, _) => None
+      }
+    }
+  }
+
   // Exercise 5.14
-  def startsWith[B](s: Stream[B]): Boolean = ???
+  def startsWith[B](s: Stream[B]): Boolean =
+    zipAll(s)
+      .takeWhile { pair => !pair._2.isEmpty }
+      .forAll { pair => pair._1 == pair._2 }
+
+  // Exercise 5.15
+  def tails: Stream[Stream[A]] =
+    unfold(Some(this): Option[Stream[A]]) { maybeStream =>
+      maybeStream match {
+        case Some(Cons(h, t)) => Some((maybeStream.get, Some(t())))
+        case Some(Empty) => Some((Empty, None))
+        case _ => None
+      }
+    }
+
+  // Exercise 5.16
+  def scanRight[B](z: => B)(f: (A, => B) => B): Stream[B] =
+    this match {
+      case Cons(h,t) => {
+        val intermediateResult = t().scanRight(z)(f)
+        cons(f(h(), intermediateResult.headOption.getOrElse(z)), intermediateResult)
+      }
+      case _ => cons(z, empty)
+    }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -130,10 +224,13 @@ object Stream {
   // Exercise 5.12
   def onesU(): Stream[Int] = unfold(1)(x => Option((x, x)))
 
+  // Exercise 5.12
   def constantU[A](a: A): Stream[A] = unfold(a)(x => Option((x, x)))
 
+  // Exercise 5.12
   def fromU(n: Int): Stream[Int] = unfold(n - 1)(x => Some((x + 1, x + 1)))
 
+  // Exercise 5.12
   def fibsU(): Stream[Int] =
     unfold((0, 1)){ prev =>
       Some((prev._1, (prev._2, prev._1 + prev._2)))
