@@ -38,7 +38,7 @@ class Chapter06Spec extends FunSpec with Matchers {
 
     describe("ints") {
       it("returns a list of random integers") {
-        RNG.ints(3)(RNG.Simple(1))._1 shouldEqual List(-549383847, -1151252339, 384748)
+        RNG.ints(3)(RNG.Simple(1))._1 shouldEqual List(384748, -1151252339, -549383847)
       }
     }
 
@@ -52,6 +52,18 @@ class Chapter06Spec extends FunSpec with Matchers {
     describe("map2") {
       it("returns a result of combining 2 rand operations") {
         RNG.map2(RNG.nonNegativeInt, RNG.nonNegativeInt)(_ + _).apply(RNG.Simple(1))._1 shouldEqual 384748 + 1151252339
+      }
+    }
+
+    describe("sequence") {
+      it("combines list of transitions into a single transition") {
+        RNG.sequence[Int](List(RNG.nonNegativeInt, RNG.nonNegativeInt)).apply(RNG.Simple(1))._1 shouldEqual List(384748, 1151252339)
+      }
+    }
+
+    describe("intsUsingSequence") {
+      it("returns a list of random integers") {
+        RNG.intsUsingSequence(3)(RNG.Simple(1))._1 shouldEqual List(384748, -1151252339, -549383847)
       }
     }
   }

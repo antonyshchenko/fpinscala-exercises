@@ -65,10 +65,11 @@ object RNG {
 
   // Exercise 6.4
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
-    Range(0, count).toList.foldRight((List[Int](), rng)) { (_, state) =>
+    val res = Range(0, count).toList.foldRight((List[Int](), rng)) { (_, state) =>
       val (nextRandInt, nextRng) = state._2.nextInt
       (nextRandInt :: state._1, nextRng)
     }
+    res.copy(res._1.reverse)
   }
 
   // Exercise 6.5
@@ -87,7 +88,21 @@ object RNG {
     }
   }
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
+  // Exercise 6.7
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    rng => {
+      val res = fs.foldLeft((List[A](), rng)) { (state, f) =>
+        val (a, nextRng) = f(state._2)
+        (a :: state._1, nextRng)
+      }
+      res.copy(res._1.reverse)
+    }
+  }
+
+  // Exercise 6.7
+  def intsUsingSequence(count: Int): Rand[List[Int]] = {
+    sequence(List.fill(count)(int))
+  }
 
   def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
 }
