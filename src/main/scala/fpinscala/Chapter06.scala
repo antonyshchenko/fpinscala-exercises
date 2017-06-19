@@ -119,6 +119,20 @@ object RNG {
       if (i + (n - 1) - mod >= 0) unit(mod)
       else nonNegativeLessThan(n)
     }
+
+  // Exercise 6.9
+  def mapUsingFlatMap[A,B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s) { a => unit(f(a)) }
+
+  // Exercise 6.9
+  def map2UsingFlatMap[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+    rng => {
+      val (a, rng2) = ra(rng)
+      val (b, rng3) = rb(rng2)
+      (f(a, b), rng3)
+    }
+  }
+
 }
 
 case class State[S,+A](run: S => (A, S)) {

@@ -79,8 +79,22 @@ class Chapter06Spec extends FunSpec with Matchers {
 
     describe("nonNegativeLessThan") {
       it("returns non negative random integer which is less than given value") {
-        val (value, _) = RNG.nonNegativeLessThan(2)(RNG.Simple(2))
-        value shouldEqual 1
+        val (res, _) = RNG.nonNegativeLessThan(2)(RNG.Simple(2))
+        res shouldEqual 1
+      }
+    }
+
+    describe("mapUsingFlatMap") {
+      it("transforms rand with given function") {
+        val (res, _) = RNG.mapUsingFlatMap(RNG.nonNegativeInt)(_ + 1).apply(RNG.Simple(1))
+        res shouldEqual 384749
+      }
+    }
+
+    describe("map2UsingFlatMap") {
+      it("returns a result of combining 2 rand operations") {
+        val (res, _) = RNG.map2UsingFlatMap(RNG.nonNegativeInt, RNG.nonNegativeInt)(_ + _).apply(RNG.Simple(1))
+        res shouldEqual 384748 + 1151252339
       }
     }
   }
