@@ -66,5 +66,22 @@ class Chapter06Spec extends FunSpec with Matchers {
         RNG.intsUsingSequence(3)(RNG.Simple(1))._1 shouldEqual List(384748, -1151252339, -549383847)
       }
     }
+
+    describe("flatMap") {
+      it("allows to generate new Rand value based on a given one") {
+        val (sumOfTwoRands, _) = RNG.flatMap(RNG.nonNegativeInt) { a =>
+          RNG.map(RNG.nonNegativeInt)(a + _)
+        }.apply(RNG.Simple(1))
+
+        sumOfTwoRands shouldEqual 384748 + 1151252339
+      }
+    }
+
+    describe("nonNegativeLessThan") {
+      it("returns non negative random integer which is less than given value") {
+        val (value, _) = RNG.nonNegativeLessThan(2)(RNG.Simple(2))
+        value shouldEqual 1
+      }
+    }
   }
 }
