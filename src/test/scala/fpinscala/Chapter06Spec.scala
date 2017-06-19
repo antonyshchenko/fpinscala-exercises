@@ -98,4 +98,43 @@ class Chapter06Spec extends FunSpec with Matchers {
       }
     }
   }
+
+  describe("State") {
+    describe("map") {
+      it("transforms state") {
+        State(RNG.nonNegativeInt).map(_ + 1).run(RNG.Simple(1))._1 shouldEqual 384749
+      }
+    }
+
+    describe("map2") {
+      it("returns a result of combining 2 state transitions") {
+        val s1 = State(RNG.nonNegativeInt)
+        val s2 = State(RNG.nonNegativeInt)
+
+        val s3 = s1.map2(s2)(_ + _)
+
+        s3.run(RNG.Simple(1))._1 shouldEqual 384748 + 1151252339
+      }
+    }
+
+    describe("sequence") {
+      it("combines list of state transitions into a single transition") {
+        val seq = State.sequence[RNG, Int](List(State(RNG.nonNegativeInt), State(RNG.nonNegativeInt)))
+
+        seq.run(RNG.Simple(1))._1 shouldEqual List(384748, 1151252339)
+      }
+    }
+
+    describe("flatMap") {
+      it("allows to generate new state based on given one") {
+        val s1 = State(RNG.nonNegativeInt)
+        val s2 = State(RNG.nonNegativeInt)
+        val (sumOfTwoRands, _) = s1.flatMap { a =>
+          s2.map(a + _)
+        }.run(RNG.Simple(1))
+
+        sumOfTwoRands shouldEqual 384748 + 1151252339
+      }
+    }
+  }
 }
