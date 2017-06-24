@@ -119,7 +119,7 @@ class Chapter06Spec extends FunSpec with Matchers {
 
     describe("sequence") {
       it("combines list of state transitions into a single transition") {
-        val seq = State.sequence[RNG, Int](List(State(RNG.nonNegativeInt), State(RNG.nonNegativeInt)))
+        val seq = State.sequence(List(State(RNG.nonNegativeInt), State(RNG.nonNegativeInt)))
 
         seq.run(RNG.Simple(1))._1 shouldEqual List(384748, 1151252339)
       }
@@ -134,6 +134,22 @@ class Chapter06Spec extends FunSpec with Matchers {
         }.run(RNG.Simple(1))
 
         sumOfTwoRands shouldEqual 384748 + 1151252339
+      }
+    }
+  }
+
+  describe("candy machine") {
+    describe("simulateMachine") {
+      it("calculates number of coins/candies for given machine state and a list of inputs") {
+        Machine.simulateMachine(List(Coin, Turn, Coin, Turn, Turn)).run(Machine(true, 5, 0)) shouldEqual ((2, 3), Machine(true, 3, 2))
+      }
+
+      it("does not dispense candies when no coin is inserted") {
+        Machine.simulateMachine(List(Turn)).run(Machine(true, 5, 0)) shouldEqual ((0, 5), Machine(true, 5, 0))
+      }
+
+      it("does not unlock if coin is inserted into empty machine") {
+        Machine.simulateMachine(List(Coin)).run(Machine(true, 0, 0)) shouldEqual ((0, 0), Machine(true, 0, 0))
       }
     }
   }

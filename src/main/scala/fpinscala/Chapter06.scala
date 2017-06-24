@@ -178,6 +178,34 @@ object State {
     }
   }
 
-  type Rand[A] = State[RNG, A]
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+  def get[S]: State[S, S] = State(s => (s, s))
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+  def modify[S](f: S => S): State[S, Unit] = for {
+    s <- get
+    _ <- set(f(s))
+  } yield ()
+
+}
+
+// Exercise 6.11
+object Machine {
+  def processInput(machine: Machine, input: Input): Machine = {
+    (machine, input) match {
+      case (Machine(_, 0, _), _) => machine
+      case (Machine(true, _, _), Turn) => machine
+      case (Machine(false, _, _), Coin) => machine
+      case (Machine(true, candies, coins), Coin) if candies > 0 => machine.copy(locked = false, coins = coins + 1)
+      case (Machine(false, candies, _), Turn) => machine.copy(locked = true, candies - 1)
+    }
+  }
+
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+    val stateTransitions = inputs.map { input =>
+      State.modify((machine: Machine) => processInput(machine, input))
+    }
+
+    val finalState = State.sequence(stateTransitions)
+    finalState.flatMap(_ => State.get).map(machine => (machine.coins, machine.candies))
+  }
 }
