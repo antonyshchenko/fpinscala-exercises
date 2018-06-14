@@ -1,4 +1,4 @@
-package fpinscala.Chapter05
+package fpinscala.Chapter06
 
 trait RNG {
   def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.

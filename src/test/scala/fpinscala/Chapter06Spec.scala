@@ -1,4 +1,4 @@
-package fpinscala.Chapter05
+package fpinscala.Chapter06
 
 import org.scalatest._
 
